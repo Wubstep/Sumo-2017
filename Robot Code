@@ -1,0 +1,106 @@
+#include "Adafruit_VL53L0X.h"
+
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+int x;
+int y;
+int MotorLF = 10;
+int MotorLB = 9;
+int MotorRF = 5;
+int MotorRB = 6;
+
+void turnRight() {
+  digitalWrite(MotorLF, HIGH);
+  digitalWrite(MotorLB, LOW);
+  digitalWrite(MotorRF, LOW);
+  digitalWrite(MotorRB, HIGH);
+}
+
+void turnLeft() {
+  digitalWrite(MotorLF, LOW);
+  digitalWrite(MotorLB, HIGH);
+  digitalWrite(MotorRF, HIGH);
+  digitalWrite(MotorRB, LOW);
+}
+void forward() {
+  digitalWrite(MotorLF, HIGH);
+  digitalWrite(MotorLB, LOW);
+  digitalWrite(MotorRF, HIGH);
+  digitalWrite(MotorRB, LOW);
+}
+void back() {
+  digitalWrite(MotorLF, LOW);
+  digitalWrite(MotorLB, HIGH);
+  digitalWrite(MotorRF, LOW);
+  digitalWrite(MotorRB, HIGH);
+}
+void setup()
+{
+  pinMode (3, INPUT);
+  pinMode (11, INPUT);
+  Serial.begin (115200);
+  pinMode(MotorLF, OUTPUT);
+  pinMode(MotorLB, OUTPUT);
+  pinMode(MotorRF, OUTPUT);
+  pinMode(MotorRB, OUTPUT);
+
+
+
+  // wait until serial port opens for native USB devices
+  while (! Serial) {
+    delay(1);
+  }
+
+  Serial.println("Adafruit VL53L0X test");
+  if (!lox.begin()) {
+    Serial.println(F("Failed to boot VL53L0X"));
+    while (1);
+  }
+  // power
+  Serial.println(F("VL53L0X API Simple Ranging example\n\n"));
+  delay(50);
+}
+
+
+void loop() {
+
+  x = digitalRead(3);
+  y = digitalRead(11);
+
+ VL53L0X_RangingMeasurementData_t measure;
+
+  Serial.print("Reading a measurement... ");
+  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+
+  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+    Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+  } else {
+    Serial.println(" out of range ");
+  }
+
+
+  if ((measure.RangeMilliMeter < 70) && (measure.RangeMilliMeter> 20))
+  { 
+    digitalWrite(MotorLF, HIGH);
+    digitalWrite(MotorLB, LOW);
+    digitalWrite(MotorRF, HIGH);
+    digitalWrite(MotorRB, LOW);
+  }
+  
+  if ((measure.RangeMilliMeter > 200) or (measure.RangeMilliMeter < 30))
+  { 
+    if ((x == HIGH) and (y == HIGH))
+  {
+    forward();
+  }
+  if ((x == HIGH) and (y == LOW))
+  { turnRight();
+    delay (250);
+    Serial.print ("Reinhardt");
+    Serial.println ();
+  }
+
+  if ((y == HIGH) and (x == LOW))
+  { turnLeft();
+    delay (250);
+    Serial.print ("Zarya");
+    Serial.println ();}}}
